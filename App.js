@@ -19,17 +19,16 @@ const switchNavigator = createSwitchNavigator({
     Signup: SignupScreen,
     Signin: SigninScreen,
   }),
-  mainFlow: createMaterialBottomTabNavigator({ 
-    restaurantFlow: createStackNavigator({
-      Home: HomeScreen,
-      Search: SearchScreen,
+  mainFlow: createMaterialBottomTabNavigator({
+    Home: HomeScreen, // will needs its own stack?
+    SearchFlow: createStackNavigator({
+      SearchFlow: SearchScreen,
       Restaurant: RestaurantHomeScreen,
       RestaurantMenu: RestaurantMenuScreen,
       Item: ItemReviewScreen,
       UserReview: UserReviewScreen,
       UserProfile: UserProfileScreen,
     }),
-    Search: SearchScreen,
     Account: AccountScreen
   }),
 });

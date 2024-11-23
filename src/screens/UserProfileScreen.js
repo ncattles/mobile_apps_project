@@ -1,8 +1,10 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
+import { Text, StyleSheet, View } from "react-native";
 
-const UserProfileScreen = () => {
-  return <Text style={styles.text}>UserProfileScreen</Text>;
+const UserProfileScreen = (props) => {
+  return <View>
+    <Text style={styles.text}>UserProfileScreen</Text>
+  </View>
 };
 
 const styles = StyleSheet.create({

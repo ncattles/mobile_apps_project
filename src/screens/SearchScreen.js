@@ -1,8 +1,14 @@
 import React from "react";
-import { Text, StyleSheet } from "react-native";
+import { Text, StyleSheet, View, Button } from "react-native";
 
-const SearchScreen = () => {
-  return <Text style={styles.text}>SearchScreen</Text>;
+const SearchScreen = (props) => {
+  return <View>
+    <Text style={styles.text}>SearchScreen</Text>
+    <Button
+      title="go to restaurant"
+      onPress={() => {props.navigation.navigate('Restaurant')}}
+    />
+  </View>
 };
 
 const styles = StyleSheet.create({

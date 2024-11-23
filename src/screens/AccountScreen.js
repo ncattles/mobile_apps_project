@@ -7,6 +7,7 @@ const AccountScreen = () => {
 
 const styles = StyleSheet.create({
   text: {
+    marginTop: 30,
     fontSize: 30,
   },
 });
