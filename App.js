@@ -37,7 +37,7 @@ const switchNavigator = createSwitchNavigator({
 const App = createAppContainer(switchNavigator);
 
 export default () => {
-  // was getting error with if App wasnt wrapp in SafeAreaProvider
+  // was getting error if App wasnt wrapped in SafeAreaProvider
   return <SafeAreaProvider>  
     <App></App>
   </SafeAreaProvider>
