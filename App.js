@@ -13,6 +13,7 @@ import UserReviewScreen from "./src/screens/UserReviewScreen";
 import UserProfileScreen from "./src/screens/UserProfileScreen";
 import AccountScreen from "./src/screens/AccountScreen";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AddReviewScreen from './src/screens/AddReviewScreen';
 
 const switchNavigator = createSwitchNavigator({
   loginFlow: createStackNavigator({
@@ -24,6 +25,7 @@ const switchNavigator = createSwitchNavigator({
     SearchFlow: createStackNavigator({
       SearchFlow: SearchScreen,
       Restaurant: RestaurantHomeScreen,
+      AddReview: AddReviewScreen,
       RestaurantMenu: RestaurantMenuScreen,
       Item: ItemReviewScreen,
       UserReview: UserReviewScreen,

@@ -8,6 +8,10 @@ const RestaurantHomeScreen = (props) => {
       title="Go To Restaurant Menu"
       onPress={() => {props.navigation.navigate('RestaurantMenu')} }
     />
+    <Button 
+      title="Add Review"
+      onPress={() => {props.navigation.navigate('AddReview')} }
+    />
   </View>
 };
 
