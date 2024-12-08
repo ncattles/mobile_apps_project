@@ -27,7 +27,7 @@ const switchNavigator = createSwitchNavigator({
       Restaurant: RestaurantHomeScreen,
       AddReview: AddReviewScreen,
       RestaurantMenu: RestaurantMenuScreen,
-      Item: ItemReviewScreen,
+      ItemReview: ItemReviewScreen,
       UserReview: UserReviewScreen,
       UserProfile: UserProfileScreen,
     }),

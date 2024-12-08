@@ -18,7 +18,7 @@ const RestaurantMenuScreen = ({ navigation }) => {
     Appetizers: [],
     Entrees: [],
     Desserts: [],
-    Drinks: [],
+    Drinks: [], 
     Others: [],
   });
 
@@ -123,6 +123,14 @@ const RestaurantMenuScreen = ({ navigation }) => {
     setNewItemNames((prevNames) => ({ ...prevNames, [section]: '' }));
   };
 
+  // Delete an item from a section
+  const deleteItemFromSection = (section, itemId) => {
+    setMenuSections((prevSections) => {
+      const updatedSection = prevSections[section].filter((item) => item.id !== itemId);
+      return { ...prevSections, [section]: updatedSection };
+    });
+  };
+
   // Render items in a section
   const renderMenuItem = (section, item) => (
     <View style={styles.menuItem}>
@@ -134,8 +142,11 @@ const RestaurantMenuScreen = ({ navigation }) => {
           <Text style={styles.addPictureText}>+ Add Picture</Text>
         </TouchableOpacity>
       )}
-      <TouchableOpacity onPress={() => navigation.navigate('Item', { itemName: item.name, itemImageUri: item.imageUri })}>
+      <TouchableOpacity onPress={() => navigation.navigate('ItemReview')}>
         <Text style={styles.reviewButton}>See review for this dish</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => deleteItemFromSection(section, item.id)}>
+        <Text style={styles.deleteButton}>Delete</Text>
       </TouchableOpacity>
     </View>
   );
@@ -223,6 +234,11 @@ const styles = StyleSheet.create({
   reviewButton: {
     fontSize: 14,
     color: '#28a745',
+    marginTop: 10,
+  },
+  deleteButton: {
+    fontSize: 14,
+    color: '#dc3545',
     marginTop: 10,
   },
   input: {
