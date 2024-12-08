@@ -10,6 +10,8 @@ import {
   TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
 
 const RestaurantMenuScreen = ({ navigation }) => {
   const [menuSections, setMenuSections] = useState({
@@ -27,6 +29,35 @@ const RestaurantMenuScreen = ({ navigation }) => {
     Drinks: '',
     Others: '',
   });
+
+  // Load menuSections from AsyncStorage
+  useEffect(() => {
+    const loadMenuSections = async () => {
+      try {
+        const savedMenuSections = await AsyncStorage.getItem('menuSections');
+        if (savedMenuSections) {
+          setMenuSections(JSON.parse(savedMenuSections));
+        }
+      } catch (error) {
+        console.error('Failed to load menu sections:', error);
+      }
+    };
+
+    loadMenuSections();
+  }, []);
+
+   // Save menuSections to AsyncStorage whenever it changes
+   useEffect(() => {
+    const saveMenuSections = async () => {
+      try {
+        await AsyncStorage.setItem('menuSections', JSON.stringify(menuSections));
+      } catch (error) {
+        console.error('Failed to save menu sections:', error);
+      }
+    };
+
+    saveMenuSections();
+  }, [menuSections]);
 
   // Generic image picker function
   const pickImage = async (fromCamera, section, itemId) => {
