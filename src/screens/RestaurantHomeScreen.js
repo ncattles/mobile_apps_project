@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { Text, StyleSheet, View, TouchableOpacity, FlatList, Image } from "react-native";
 import { RestaurantContext } from "../context/RestaurantProvider";
 import yelp from "../api/yelp"
+import { renderStars } from "../components/RestaurantCard";
 
 const RestaurantHomeScreen = ({ navigation }) => {
   const { selectedRestaurant } = useContext(RestaurantContext); // get restaurantID from context
@@ -34,11 +35,6 @@ const RestaurantHomeScreen = ({ navigation }) => {
   const renderPhoto = ({ item }) => (
     <Image source={{ uri: item }} style={styles.photo} />
   );
-
-  const renderStars = (rating) => {
-    const stars = Math.floor(rating);
-    return "⭐".repeat(stars);
-  };
 
   return (
     <View style={styles.container}>
@@ -123,7 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   photosList: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   photo: {
     width: 120,

@@ -2,11 +2,11 @@ import React, {useState, useEffect, useContext} from "react";
 import { Text, StyleSheet, View, Button, TextInput, FlatList, Image, TouchableOpacity } from "react-native";
 import yelp from "../api/yelp"
 import { RestaurantContext } from "../context/RestaurantProvider";
+import { RestaurantCard } from "../components/RestaurantCard";
 
 const HomeScreen = ({ navigation }) => {
   const [restaurants, setRestaurants] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("New Orleans");
-
+  
   // access context
   const { setSelectedRestaurant } = useContext(RestaurantContext);
 
@@ -17,7 +17,7 @@ const HomeScreen = ({ navigation }) => {
         params: {
           term: "restaurants",
           location: term,
-          limit: 20,
+          limit: 40,
         },
       });
       setRestaurants(response.data.businesses);
@@ -39,37 +39,18 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Search"
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-        onSubmitEditing={() => fetchRestaurants(searchTerm)}
-      />
-
-      {/* Title */}
       <Text style={styles.title}>Restaurants Near You</Text>
-
-      {/* Restaurant List */}
       <FlatList
         data={restaurants}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity
+          <RestaurantCard
+            restaurant={item}
             onPress={() => {
-              setSelectedRestaurant(item.id); // set business ID in context
-              navigation.navigate("Restaurant"); 
+              setSelectedRestaurant(item.id);
+              navigation.navigate("Restaurant");
             }}
-          >
-            <View style={styles.restaurantCard}>
-              <Image source={{ uri: item.image_url }} style={styles.image} />
-              <View style={styles.info}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.rating}>Rating: {item.rating} {renderStars(item.rating)}</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
+          />
         )}
       />
     </View>
@@ -93,6 +74,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   title: {
+    marginTop: 15,
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
