@@ -1,154 +1,73 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Alert,
-  TextInput,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect } from 'react';
+import React, { useState, useEffect, useContext } from "react";
+import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator } from "react-native";
+import yelp from "../api/yelp";
+import { RestaurantContext } from "../context/RestaurantProvider";
+import { AuthContext } from "../context/AuthProvider";
+import { RestaurantCard } from "../components/RestaurantCard";
+import axios from "axios";
+
+const categories = ["Appetizers", "Entrees", "Desserts", "Drinks", "Others"];
 
 const RestaurantMenuScreen = ({ navigation }) => {
+  const { selectedRestaurant } = useContext(RestaurantContext); // Access restaurantId from context
   const [menuSections, setMenuSections] = useState({
     Appetizers: [],
     Entrees: [],
     Desserts: [],
-    Drinks: [], 
+    Drinks: [],
     Others: [],
   });
+  const [restaurantName, setRestaurantName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const { token } = useContext(AuthContext); // Access token from AuthContext
 
-  const [newItemNames, setNewItemNames] = useState({
-    Appetizers: '',
-    Entrees: '',
-    Desserts: '',
-    Drinks: '',
-    Others: '',
-  });
-
-  // Load menuSections from AsyncStorage
+  // Fetch restaurant details and reviews
   useEffect(() => {
-    const loadMenuSections = async () => {
+    const fetchRestaurantDetails = async () => {
       try {
-        const savedMenuSections = await AsyncStorage.getItem('menuSections');
-        if (savedMenuSections) {
-          setMenuSections(JSON.parse(savedMenuSections));
-        }
+        // Fetch restaurant details from Yelp API
+        const restaurantResponse = await yelp.get(`/${selectedRestaurant}`);
+        setRestaurantName(restaurantResponse.data.name);
+
+        // Fetch reviews from MongoDB
+        const reviewResponse = await axios.get(
+          `http://127.0.0.1:3000/restaurants/${selectedRestaurant}/reviews`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const reviews = reviewResponse.data;
+
+        // Organize reviews by categories
+        const categorizedReviews = categories.reduce((acc, category) => {
+          acc[category] = reviews.filter((review) => review.category === category);
+          return acc;
+        }, {});
+
+        setMenuSections(categorizedReviews);
       } catch (error) {
-        console.error('Failed to load menu sections:', error);
+        console.error("Error fetching restaurant details or reviews:", error);
+        Alert.alert("Error", "Unable to load restaurant details or reviews.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadMenuSections();
-  }, []);
-
-   // Save menuSections to AsyncStorage whenever it changes
-   useEffect(() => {
-    const saveMenuSections = async () => {
-      try {
-        await AsyncStorage.setItem('menuSections', JSON.stringify(menuSections));
-      } catch (error) {
-        console.error('Failed to save menu sections:', error);
-      }
-    };
-
-    saveMenuSections();
-  }, [menuSections]);
-
-  // Generic image picker function
-  const pickImage = async (fromCamera, section, itemId) => {
-    const permission = fromCamera
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permission.status !== 'granted') {
-      Alert.alert('Permission Denied', `Access to ${fromCamera ? 'camera' : 'gallery'} is required.`);
-      return;
-    }
-
-    const result = fromCamera
-      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [4, 3], quality: 1 })
-      : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [4, 3], quality: 1 });
-
-    if (!result.canceled) {
-      updateSectionWithImage(section, itemId, result.assets[0].uri);
-    }
-  };
-
-  // Handle adding a picture
-  const handleAddPicture = (section, itemId) => {
-    Alert.alert('Add Picture', 'Choose an option', [
-      { text: 'Take a Picture', onPress: () => pickImage(true, section, itemId) },
-      { text: 'Import from Gallery', onPress: () => pickImage(false, section, itemId) },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
-  };
-
-  // Update the section with the selected image
-  const updateSectionWithImage = (section, itemId, imageUri) => {
-    setMenuSections((prevSections) => {
-      const updatedSection = prevSections[section].map((item) =>
-        item.id === itemId ? { ...item, imageUri } : item
-      );
-      return { ...prevSections, [section]: updatedSection };
-    });
-  };
-
-  // Add a new item to a section
-  const addNewItemToSection = (section) => {
-    const dishName = newItemNames[section].trim();
-
-    if (!dishName) {
-      Alert.alert('Error', 'Please enter a name for the dish.');
-      return;
-    }
-
-    const newItem = {
-      id: String(Math.random()),
-      name: dishName,
-      imageUri: null,
-    };
-
-    setMenuSections((prevSections) => {
-      return {
-        ...prevSections,
-        [section]: [...prevSections[section], newItem],
-      };
-    });
-
-    setNewItemNames((prevNames) => ({ ...prevNames, [section]: '' }));
-  };
-
-  // Delete an item from a section
-  const deleteItemFromSection = (section, itemId) => {
-    setMenuSections((prevSections) => {
-      const updatedSection = prevSections[section].filter((item) => item.id !== itemId);
-      return { ...prevSections, [section]: updatedSection };
-    });
-  };
+    fetchRestaurantDetails();
+  }, [selectedRestaurant]);
 
   // Render items in a section
-  const renderMenuItem = (section, item) => (
-    <View style={styles.menuItem}>
-      <Text style={styles.itemName}>{item.name}</Text>
-      {item.imageUri ? (
-        <Image source={{ uri: item.imageUri }} style={styles.itemImage} />
-      ) : (
-        <TouchableOpacity onPress={() => handleAddPicture(section, item.id)}>
-          <Text style={styles.addPictureText}>+ Add Picture</Text>
-        </TouchableOpacity>
-      )}
-      <TouchableOpacity onPress={() => navigation.navigate('ItemReview')}>
-        <Text style={styles.reviewButton}>See review for this dish</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => deleteItemFromSection(section, item.id)}>
-        <Text style={styles.deleteButton}>Delete</Text>
-      </TouchableOpacity>
-    </View>
+  const renderMenuItem = (item) => (
+    <RestaurantCard
+      restaurant={{
+        image_url: item.images?.[0] || "https://via.placeholder.com/150", // First image or placeholder
+        name: item.item, // Dish name
+        rating: item.rating, // Rating out of 5
+      }}
+      onPress={() => navigation.navigate("ItemReview", { reviewId: item._id })} // Navigate to a review detail screen
+    />
   );
 
   // Render sections
@@ -157,27 +76,25 @@ const RestaurantMenuScreen = ({ navigation }) => {
       <Text style={styles.sectionTitle}>{section}</Text>
       <FlatList
         data={menuSections[section]}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => renderMenuItem(section, item)}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => renderMenuItem(item)}
       />
-      <TextInput
-        style={styles.input}
-        placeholder={`Enter dish name for ${section}`}
-        value={newItemNames[section]}
-        onChangeText={(text) => setNewItemNames({ ...newItemNames, [section]: text })}
-      />
-      <TouchableOpacity onPress={() => addNewItemToSection(section)}>
-        <Text style={styles.addItemText}>+ Add Item</Text>
-      </TouchableOpacity>
     </View>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#007BFF" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.restaurantName}>Italian Bistro</Text>
-      <Text style={styles.adminMode}>Restaurant Administration Mode</Text>
+      <Text style={styles.restaurantName}>{restaurantName || "Restaurant"} Menu</Text>
       <FlatList
-        data={Object.keys(menuSections)}
+        data={categories}
         keyExtractor={(section) => section}
         renderItem={renderSection}
       />
@@ -189,68 +106,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
   },
   restaurantName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    textAlign: 'center',
-  },
-  adminMode: {
-    fontSize: 16,
-    color: '#888',
-    marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   section: {
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
-  menuItem: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  itemName: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  itemImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  addPictureText: {
-    fontSize: 14,
-    color: '#007bff',
-    marginBottom: 10,
-  },
-  reviewButton: {
-    fontSize: 14,
-    color: '#28a745',
-    marginTop: 10,
-  },
-  deleteButton: {
-    fontSize: 14,
-    color: '#dc3545',
-    marginTop: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    marginBottom: 10,
-    borderRadius: 5,
-  },
-  addItemText: {
-    fontSize: 14,
-    color: '#007bff',
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

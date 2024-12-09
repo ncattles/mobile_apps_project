@@ -8,9 +8,9 @@ import axios from "axios";
 const categories = ["Appetizers", "Entrees", "Desserts", "Drinks", "Others"];
 
 const AddReviewScreen = ({ navigation }) => {
-  const { selectedRestaurant } = useContext(RestaurantContext); // Access restaurantId from context
+  const { selectedRestaurant } = useContext(RestaurantContext); // access restaurantId from context
   const { token } = useContext(AuthContext); // access token from AuthContext
-  const [category, setCategory] = useState("Appetizers"); // Default category
+  const [category, setCategory] = useState("Appetizers"); // default category
   const [item, setItem] = useState("");
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState("");
