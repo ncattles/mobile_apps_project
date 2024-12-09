@@ -17,7 +17,7 @@ const SearchScreen = ({ navigation }) => {
         params: {
           term: searchTerm || "restaurants",
           location: location || "New Orleans",
-          limit: 30,
+          limit: 40,
         },
       });
       setSearchResults(response.data.businesses);

@@ -1,10 +1,14 @@
 require("./models/User");
 require("./models/Track");
+require("./models/Review"); 
+require("./models/Restaurant"); 
+
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const authRoutes = require("./routes/authRoutes");
 const trackRoutes = require("./routes/trackRoutes");
+const reviewRoutes = require("./routes/reviewRoutes"); 
 const requireAuth = require("./middlewares/requireAuth");
 
 const app = express();
@@ -12,6 +16,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(authRoutes);
 app.use(trackRoutes);
+app.use(reviewRoutes);
 
 // Use your MongoDB connection string here
 const mongoUri =
