@@ -1,16 +1,25 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import axios from "axios";
 
 const SigninScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSignIn = () => {
-    if (email === "test@example.com" && password === "password") {
+  const handleSignIn = async () => {
+    console.log("Sign In button clicked");
+    try {
+      console.log("Sending request to server...");
+      const response = await axios.post("http://127.0.0.1:3000/signin", {
+        email,
+        password,
+      });
+      console.log("Sign in response:", response.data);
       Alert.alert("Success", "Signed in successfully!");
-      navigation.navigate("mainFlow");
-    } else {
-      Alert.alert("Error", "Invalid email or password");
+      navigation.navigate("Home"); // Replace "Home" with your actual main screen
+    } catch (error) {
+      console.error("Sign in error:", error.response?.data || error.message);
+      Alert.alert("Error", error.response?.data?.error || "Something went wrong");
     }
   };
 

@@ -1,18 +1,32 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import axios from "axios";
 
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
+    console.log("Sign Up button clicked");
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
-    Alert.alert("Success", "Account created successfully!");
-    navigation.navigate("Signin");
+
+    try {
+      console.log("Sending request to server...");
+      const response = await axios.post("http://127.0.0.1:3000/signup", {
+        email,
+        password,
+      });
+      console.log("Sign up response:", response.data);
+      Alert.alert("Success", "Account created successfully!");
+      navigation.navigate("Signin");
+    } catch (error) {
+      console.error("Sign up error:", error.response?.data || error.message);
+      Alert.alert("Error", error.response?.data?.error || "Something went wrong");
+    }
   };
 
   return (
