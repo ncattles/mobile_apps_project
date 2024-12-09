@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import axios from "axios";
+import { AuthContext } from "../context/AuthProvider";
 
 const SigninScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setToken } = useContext(AuthContext);
 
   const handleSignIn = async () => {
     console.log("Sign In button clicked");
@@ -14,6 +16,9 @@ const SigninScreen = ({ navigation }) => {
         email,
         password,
       });
+      const { token } = response.data;
+
+      setToken(token); // save token in AuthContext
       console.log("Sign in response:", response.data);
       Alert.alert("Success", "Signed in successfully!");
       navigation.navigate("Home"); // Replace "Home" with your actual main screen

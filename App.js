@@ -15,6 +15,7 @@ import AccountScreen from "./src/screens/AccountScreen";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AddReviewScreen from './src/screens/AddReviewScreen';
 import { RestaurantProvider } from './src/context/RestaurantProvider';
+import { AuthProvider } from './src/context/AuthProvider'
 
 const switchNavigator = createSwitchNavigator({
   loginFlow: createStackNavigator({
@@ -40,9 +41,11 @@ const App = createAppContainer(switchNavigator);
 
 export default () => {
   // was getting error if App wasnt wrapped in SafeAreaProvider
-  return <SafeAreaProvider>  
-    <RestaurantProvider>
-      <App></App>
-    </RestaurantProvider>
+  return <SafeAreaProvider>
+    <AuthProvider>
+      <RestaurantProvider>
+        <App></App>
+      </RestaurantProvider>
+    </AuthProvider>  
   </SafeAreaProvider>
 };

@@ -12,11 +12,11 @@ router.use(requireAuth);
 // add review for specific restaurant
 router.post("/restaurants/:id/reviews", async (req, res) => {
   const { id } = req.params; // restaurantId from the URL
-  const { title, description, rating, images } = req.body;
+  const { category, item, description, rating, images } = req.body;
 
   // validate fields
-  if (!title || !description || !rating) {
-    return res.status(422).send({ error: "Title, description, and rating are required." });
+  if (!category || !item || !description || !rating) {
+    return res.status(422).send({ error: "Category, item, description, and rating are required." });
   }
 
   if (rating < 1 || rating > 5) {
@@ -26,7 +26,8 @@ router.post("/restaurants/:id/reviews", async (req, res) => {
   try {
     const review = new Review({
       restaurantId: id, // directly associate review with restaurantId
-      title,
+      category,
+      item,
       description,
       rating,
       images: images || [], // default to empty array if no images provided
