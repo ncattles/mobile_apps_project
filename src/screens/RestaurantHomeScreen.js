@@ -45,8 +45,12 @@ const RestaurantHomeScreen = ({ navigation }) => {
       {/* Restaurant Header */}
       <View style={styles.header}>
         <Text style={styles.restaurantName}>{restaurantDetails.name}</Text>
-        <Text style={styles.rating}>Rating: {restaurantDetails.rating} 
-        {renderStars(restaurantDetails.rating)}
+        <Text style={styles.category}>
+          {restaurantDetails.categories[0]?.title || "No Category"}
+        </Text>
+        <Text style={styles.rating}>
+          Rating: {restaurantDetails.rating}
+        <Text style={styles.stars}>{renderStars(restaurantDetails.rating)}</Text>
         </Text>
         <Text style={styles.infoText}>📍 {restaurantDetails.location.display_address.join(", ")}</Text>
         <Text style={styles.infoText}>📞 {restaurantDetails.display_phone}</Text>
@@ -103,6 +107,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#666",
     marginTop: 4,
+  },
+  stars: {
+    marginLeft:10,
+    fontSize: 18, 
   },
   infoText: {
     fontSize: 14,
