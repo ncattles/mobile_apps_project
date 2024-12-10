@@ -10,13 +10,14 @@ const authRoutes = require("./routes/authRoutes");
 const trackRoutes = require("./routes/trackRoutes");
 const reviewRoutes = require("./routes/reviewRoutes"); 
 const requireAuth = require("./middlewares/requireAuth");
-
+const userRoutes = require("./routes/userRoutes")
 const app = express();
 
 app.use(bodyParser.json());
 app.use(authRoutes);
 app.use(trackRoutes);
 app.use(reviewRoutes);
+app.use(userRoutes);
 
 // Use your MongoDB connection string here
 const mongoUri =

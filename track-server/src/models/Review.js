@@ -28,6 +28,14 @@ const reviewSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  likes: { 
+    type: Number, 
+    default: 0 
+  }, 
+  dislikes: { 
+    type: Number, 
+    default: 0 
+  },
 });
 
 mongoose.model("Review", reviewSchema);

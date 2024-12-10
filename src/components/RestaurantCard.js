@@ -6,7 +6,7 @@ const renderStars = (rating) => {
   return "⭐".repeat(stars);
 };
 
-const RestaurantCard = ({ restaurant, onPress }) => (
+const RestaurantCard = ({ restaurant, onPress, showLikesAndDislikes = false }) => (
   <TouchableOpacity onPress={onPress}>
     <View style={styles.restaurantCard}>
       <Image source={{ uri: restaurant.image_url }} style={styles.image} />
@@ -15,6 +15,12 @@ const RestaurantCard = ({ restaurant, onPress }) => (
         <Text style={styles.rating}>
           Rating: {restaurant.rating} {renderStars(restaurant.rating)}
         </Text>
+        {showLikesAndDislikes && (
+          <View style={styles.likeDislikeContainer}>
+            <Text style={styles.likeText}>👍 Likes: {restaurant.likes || 0}</Text>
+            <Text style={styles.dislikeText}>👎 Dislikes: {restaurant.dislikes || 0}</Text>
+          </View>
+        )}
       </View>
     </View>
   </TouchableOpacity>
@@ -45,6 +51,19 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 14,
     color: "#666",
+  },
+  likeDislikeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 5,
+  },
+  likeText: {
+    fontSize: 14,
+    color: "#28a745",
+  },
+  dislikeText: {
+    fontSize: 14,
+    color: "#dc3545",
   },
 });
 

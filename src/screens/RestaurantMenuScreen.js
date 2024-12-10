@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, Alert } from "react-native";
 import yelp from "../api/yelp";
 import { RestaurantContext } from "../context/RestaurantProvider";
 import { AuthContext } from "../context/AuthProvider";
 import { RestaurantCard } from "../components/RestaurantCard";
 import axios from "axios";
+import { ReviewContext } from "../context/ReviewProvider";
 
 const categories = ["Appetizers", "Entrees", "Desserts", "Drinks", "Others"];
 
@@ -20,6 +21,7 @@ const RestaurantMenuScreen = ({ navigation }) => {
   const [restaurantName, setRestaurantName] = useState("");
   const [loading, setLoading] = useState(true);
   const { token } = useContext(AuthContext); // Access token from AuthContext
+  const { setReviewId } = useContext(ReviewContext);
 
   // Fetch restaurant details and reviews
   useEffect(() => {
@@ -65,8 +67,14 @@ const RestaurantMenuScreen = ({ navigation }) => {
         image_url: item.images?.[0] || "https://via.placeholder.com/150", // First image or placeholder
         name: item.item, // Dish name
         rating: item.rating, // Rating out of 5
+        likes: item.likes, // like count
+        dislikes: item.dislikes, // dislike count
       }}
-      onPress={() => navigation.navigate("ItemReview", { reviewId: item._id })} // Navigate to a review detail screen
+      showLikesAndDislikes={true} // only show likes and dislikes in RestaurantMenuScreen
+      onPress={() => {
+        setReviewId(item._id);
+        navigation.navigate("ItemReview", { reviewId: item._id });
+      }}
     />
   );
 
@@ -81,14 +89,6 @@ const RestaurantMenuScreen = ({ navigation }) => {
       />
     </View>
   );
-
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#007BFF" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -121,11 +121,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });
 

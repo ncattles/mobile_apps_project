@@ -1,62 +1,204 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useContext, useEffect, useState } from "react";
+import { View, Text, StyleSheet, Alert, Image,TouchableOpacity, FlatList, ScrollView } from "react-native";
+import { ReviewContext } from "../context/ReviewProvider";
+import { AuthContext } from "../context/AuthProvider";
+import { UserContext } from "../context/UserProvider";
+import axios from "axios";
 
-const ItemReviewScreen = ({ navigation }) => {
-  const username = 'Please pass the username for USER1 who AddReview here';
-  const email = 'Please pass their email too@example.com';
+const renderStars = (rating) => {
+  const stars = Math.floor(rating);
+  return "⭐".repeat(stars);
+};
+
+const ItemReviewScreen = ({navigation}) => {
+  const { reviewId } = useContext(ReviewContext); // access reviewId from context
+  const { token } = useContext(AuthContext); // access token from AuthContext
+  const { setUserId } = useContext(UserContext);
+  const [review, setReview] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReviewDetails = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:3000/reviews/${reviewId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setReview(response.data);
+      } catch (error) {
+        console.error("Error fetching review:", error);
+        Alert.alert("Error", "Unable to load review details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (reviewId) {
+      fetchReviewDetails();
+    }
+  }, [reviewId]);
+
+  const handleLike = async () => {
+    try {
+      await axios.patch(
+        `http://127.0.0.1:3000/reviews/${reviewId}/like`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setReview((prevReview) => ({ ...prevReview, likes: prevReview.likes + 1 }));
+    } catch (error) {
+      console.error("Error liking the review:", error);
+      Alert.alert("Error", "Unable to like the review.");
+    }
+  };
+
+  const handleDislike = async () => {
+    try {
+      await axios.patch(
+        `http://127.0.0.1:3000/reviews/${reviewId}/dislike`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setReview((prevReview) => ({ ...prevReview, dislikes: prevReview.dislikes + 1 }));
+    } catch (error) {
+      console.error("Error disliking the review:", error);
+      Alert.alert("Error", "Unable to dislike the review.");
+    }
+  };
+
+  if (!review) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Review not found.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.userInfo}>On the left corner, please do a sort system. For example: Most recents or Most liked based on like counts.</Text>
-      <Text style={styles.userInfo}>It will be a list of many users reviewing this specific dish.</Text>
-      <Text style={styles.userInfo}>USER 1 example:</Text>
+    <ScrollView contentContainerStyle={styles.container}> 
+        <Text style={styles.sectionTitle}>Reviewer</Text>
+        <TouchableOpacity
+          onPress={() => {
+          setUserId(review.user._id); 
+          navigation.navigate("UserProfile", { userId: review.user._id }); 
+          }}
+        >
+  <Text style={styles.reviewerText}>{review.user?.email || "Anonymous Reviewer"}</Text>
+</TouchableOpacity>
 
-      <Text style={styles.userInfo}>Username: {username || 'Not Provided'}</Text>
-      <Text style={styles.userInfo}>Email: {email || 'Not Provided'}</Text>
-      <Text style={styles.userInfo}>LIKE&DISLIKE: Pass the like and dislike counts from UserReview here</Text>
+      <Text style={styles.sectionTitle}>Item</Text>
+      <Text style={styles.item}>{review.item}</Text>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('UserReview', { username, email })}
-      >
-        <Text style={styles.buttonText}>You want to see how user1 rates the dish?</Text>
-      </TouchableOpacity>
+      <Text style={styles.sectionTitle}>Description</Text>
+      <Text style={styles.description}>{review.description}</Text>
 
-      <Text style={styles.userInfo}>Keep repeating for other USERS</Text>
+      <Text style={styles.sectionTitle}>Rating</Text>
+      <Text style={styles.rating}>
+        {renderStars(review.rating)} ({review.rating}/5)
+      </Text>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('UserReview', { username, email })}
-      >
-        <Text style={styles.buttonText}>You want to see how user2 rates the dish?</Text>
-      </TouchableOpacity>
-    </View>
+      <Text style={styles.sectionTitle}>Images</Text>
+      {review.images?.length > 0 ? (
+        <FlatList
+          data={review.images}
+          horizontal
+          keyExtractor={(imageUri, index) => index.toString()}
+          renderItem={({ item }) => <Image source={{ uri: item }} style={styles.image} />}
+        />
+      ) : (
+        <Text style={styles.noImages}>No images available.</Text>
+      )}
+
+      <View style={styles.actionContainer}>
+        <TouchableOpacity style={styles.likeButton} onPress={handleLike}>
+          <Text style={styles.likeText}>👍 Like ({review.likes || 0})</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.dislikeButton} onPress={handleDislike}>
+          <Text style={styles.dislikeText}>👎 Dislike ({review.dislikes || 0})</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexGrow: 1,
     padding: 20,
+    backgroundColor: "#fff",
   },
-  userInfo: {
-    fontSize: 16,
-    marginBottom: 10,
-    textAlign: 'center',
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  button: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
     marginTop: 20,
   },
-  buttonText: {
-    color: 'white',
+  item: {
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: "#333",
+  },
+  description: {
+    fontSize: 16,
+    color: "#555",
+  },
+  rating: {
+    fontSize: 16,
+    color: "#007BFF",
+  },
+  image: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    marginRight: 10,
+    marginTop: 10,
+  },
+  noImages: {
+    fontSize: 14,
+    color: "#888",
+  },
+  actionContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  likeButton: {
+    backgroundColor: "#28a745",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  dislikeButton: {
+    backgroundColor: "#dc3545",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  likeText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  dislikeText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "red",
+    textAlign: "center",
   },
 });
 

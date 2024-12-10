@@ -53,4 +53,64 @@ router.get("/restaurants/:id/reviews", async (req, res) => {
   }
 });
 
+  // get a single review
+  router.get('/reviews/:id', requireAuth, async (req, res) => {
+    try {
+      const review = await Review.findById(req.params.id).populate('user', 'email');
+      if (!review) {
+        return res.status(404).send({ error: 'Review not found' });
+      }
+      res.send(review);
+    } catch (err) {
+      res.status(500).send({ error: 'Error fetching the review.' });
+    }
+  });
+
+  // delete a review
+  router.delete("/restaurants/:restaurantId/reviews/:reviewId", async (req, res) => {
+    const { restaurantId, reviewId } = req.params;
+
+    try {
+      const review = await Review.findOneAndDelete({ _id: reviewId, restaurantId });
+      if (!review) {
+        return res.status(404).send({ error: "Review not found" });
+      }
+
+      res.send({ message: "Review deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).send({ error: "Something went wrong" });
+    }
+    });
+
+  // like a review
+  router.patch("/reviews/:id/like", requireAuth, async (req, res) => {
+    try {
+      const review = await Review.findById(req.params.id);
+      if (!review) {
+        return res.status(404).send({ error: "Review not found" });
+      }
+      review.likes = (review.likes || 0) + 1; // Ensure likes is not undefined
+      await review.save();
+      res.send(review);
+    } catch (err) {
+      res.status(500).send({ error: "Error liking the review." });
+    }
+  });
+
+  // dislike a review
+  router.patch("/reviews/:id/dislike", requireAuth, async (req, res) => {
+    try {
+      const review = await Review.findById(req.params.id);
+      if (!review) {
+        return res.status(404).send({ error: "Review not found" });
+      }
+      review.dislikes = (review.dislikes || 0) + 1; // Ensure dislikes is not undefined
+      await review.save();
+      res.send(review);
+    } catch (err) {
+      res.status(500).send({ error: "Error disliking the review." });
+    }
+  });
+
 module.exports = router;
