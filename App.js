@@ -1,7 +1,8 @@
 import React from 'react';
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
-import { createStackNavigator} from "react-navigation-stack";
+import { createStackNavigator } from "react-navigation-stack";
 import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; 
 import HomeScreen from "./src/screens/HomeScreen";
 import SignupScreen from "./src/screens/SignupScreen";
 import SigninScreen from "./src/screens/SigninScreen";
@@ -15,7 +16,7 @@ import AccountScreen from "./src/screens/AccountScreen";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AddReviewScreen from './src/screens/AddReviewScreen';
 import { RestaurantProvider } from './src/context/RestaurantProvider';
-import { AuthProvider } from './src/context/AuthProvider'
+import { AuthProvider } from './src/context/AuthProvider';
 import { ReviewProvider } from './src/context/ReviewProvider';
 import { UserProvider } from './src/context/UserProvider';
 
@@ -24,34 +25,64 @@ const switchNavigator = createSwitchNavigator({
     Signup: SignupScreen,
     Signin: SigninScreen,
   }),
-  mainFlow: createMaterialBottomTabNavigator({
-    Home: HomeScreen, // will needs its own stack?
-    SearchFlow: createStackNavigator({
-      SearchFlow: SearchScreen,
-      Restaurant: RestaurantHomeScreen,
-      AddReview: AddReviewScreen,
-      RestaurantMenu: RestaurantMenuScreen,
-      ItemReview: ItemReviewScreen,
-      UserReview: UserReviewScreen,
-      UserProfile: UserProfileScreen,
-    }),
-    Account: AccountScreen
-  }),
+  mainFlow: createMaterialBottomTabNavigator(
+    {
+      Home: {
+        screen: HomeScreen,
+        navigationOptions: {
+          tabBarIcon: ({ color }) => (
+            <Icon name="home" color={color} size={24} /> 
+          ),
+        },
+      },
+      Search: {
+        screen: createStackNavigator({
+          SearchFlow: SearchScreen,
+          Restaurant: RestaurantHomeScreen,
+          AddReview: AddReviewScreen,
+          RestaurantMenu: RestaurantMenuScreen,
+          ItemReview: ItemReviewScreen,
+          UserReview: UserReviewScreen,
+          UserProfile: UserProfileScreen,
+        }),
+        navigationOptions: {
+          tabBarIcon: ({ color }) => (
+            <Icon name="magnify" color={color} size={24} /> 
+          ),
+        },
+      },
+      Account: {
+        screen: AccountScreen,
+        navigationOptions: {
+          tabBarIcon: ({ color }) => (
+            <Icon name="account" color={color} size={24} /> 
+          ),
+        },
+      },
+    },
+    {
+      initialRouteName: "Home",
+      activeColor: "#007BFF",
+      inactiveColor: "#888",
+      barStyle: { backgroundColor: "#fff" },
+    }
+  ),
 });
 
 const App = createAppContainer(switchNavigator);
 
 export default () => {
-  // was getting error if App wasnt wrapped in SafeAreaProvider
-  return <SafeAreaProvider>
-    <AuthProvider>
-      <UserProvider>
-        <RestaurantProvider>
-          <ReviewProvider> 
-          <App></App>
-          </ReviewProvider> 
-        </RestaurantProvider>
-      </UserProvider>
-    </AuthProvider>  
-  </SafeAreaProvider>
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <UserProvider>
+          <RestaurantProvider>
+            <ReviewProvider>
+              <App />
+            </ReviewProvider>
+          </RestaurantProvider>
+        </UserProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
 };
