@@ -62,9 +62,6 @@ const switchNavigator = createSwitchNavigator({
     },
     {
       initialRouteName: "Home",
-      activeColor: "#007BFF",
-      inactiveColor: "#888",
-      barStyle: { backgroundColor: "#fff" },
     }
   ),
 });
